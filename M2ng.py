@@ -2,9 +2,10 @@ import pygame
 import sys
 import random
 
+# Initialize Pygame
 pygame.init()
 
-# Constants
+# Game Constants
 WIDTH, HEIGHT = 800, 600
 FPS = 60
 
@@ -14,136 +15,134 @@ RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 GREEN = (0, 255, 0)
 
-# Initialize the game window
+# Pygame Setup
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Tower Defense Game")
-
-# Tower class
-class Tower(pygame.sprite.Sprite):
-    def __init__(self, x, y):
-        super().__init__()
-        self.image = pygame.Surface((50, 50))
-        self.image.fill(RED)
-        self.rect = self.image.get_rect()
-        self.rect.center = (x, y)
-        self.cost = 50  # Cost to build the tower
-        self.damage = 10  # Damage inflicted on enemies
-
-    def shoot(self, target):
-        bullet = Bullet(self.rect.center, target.rect.center)
-        all_bullets.add(bullet)
-
-# Enemy class
-class Enemy(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.image = pygame.Surface((30, 30))
-        self.image.fill(BLUE)
-        self.rect = self.image.get_rect()
-        self.rect.x = random.randrange(WIDTH)
-        self.rect.y = random.randrange(HEIGHT)
-
-    def update(self):
-        if self.rect.x < WIDTH // 2:
-            self.rect.x += 2
-        elif self.rect.x > WIDTH // 2:
-            self.rect.x -= 2
-
-# Bullet class
-class Bullet(pygame.sprite.Sprite):
-    def __init__(self, start, target):
-        super().__init__()
-        self.image = pygame.Surface((5, 5))
-        self.image.fill(RED)
-        self.rect = self.image.get_rect()
-        self.rect.center = start
-        self.speed = 5
-        self.target = target
-
-    def update(self):
-        angle = pygame.math.Vector2(self.target[0] - self.rect.x, self.target[1] - self.rect.y).angle_to((1, 0))
-        self.rect.x += self.speed * pygame.math.Vector2(1, 0).rotate(angle).x
-        self.rect.y += self.speed * pygame.math.Vector2(1, 0).rotate(angle).y
-
-# Player base class
-class Base(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.image = pygame.Surface((100, 100))
-        self.image.fill(GREEN)
-        self.rect = self.image.get_rect()
-        self.rect.center = (WIDTH // 2, HEIGHT // 2)
-        self.health = 100
-
-# Group to hold all towers
-all_towers = pygame.sprite.Group()
-
-# Group to hold all enemies
-all_enemies = pygame.sprite.Group()
-
-# Group to hold all bullets
-all_bullets = pygame.sprite.Group()
-
-# Create the player base
-player_base = Base()
-base_health_font = pygame.font.Font(None, 36)
-
-# Game resources
-resources = 1000  # Starting resources for the player
-
-# Game loop
+pygame.display.set_caption("Base Battle")
 clock = pygame.time.Clock()
 
+# Class for Units
+class Unit(pygame.sprite.Sprite):
+    def __init__(self, color, x, y, target_base, target_units):
+        super().__init__()
+        self.image = pygame.Surface((20, 20))
+        self.image.fill(color)
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        self.speed = 2
+        self.target_base = target_base
+        self.target_units = target_units
+        self.health = 10
+        self.attacking = False
+        self.attack_target = None
+
+    def update(self):
+        if self.health <= 0:
+            # Unit is defeated, remove from the group
+            self.kill()
+
+        if not self.attacking:
+            target_x, target_y = self.target_base
+            distance_to_base = pygame.math.Vector2(target_x - self.rect.x, target_y - self.rect.y)
+            distance_to_base.normalize_ip()
+            self.rect.x += distance_to_base.x * self.speed
+            self.rect.y += distance_to_base.y * self.speed
+
+            # Check for nearby enemy units
+            for other_unit in self.target_units:
+                if other_unit != self and pygame.sprite.collide_rect(self, other_unit):
+                    # Start attacking the other unit
+                    self.start_attack(other_unit)
+
+        elif self.attacking:
+            if self.attack_target and not self.attack_target.alive():
+                # The attack target is defeated, stop attacking
+                self.stop_attack()
+
+            elif self.attack_target:
+                # Continue attacking the target
+                distance_to_target = pygame.math.Vector2(
+                    self.attack_target.rect.x - self.rect.x, self.attack_target.rect.y - self.rect.y
+                )
+                if distance_to_target.length() > 0:
+                    distance_to_target.normalize_ip()
+                    self.rect.x += distance_to_target.x * self.speed
+                    self.rect.y += distance_to_target.y * self.speed
+
+    def start_attack(self, other_unit):
+        self.attacking = True
+        self.attack_target = other_unit
+
+    def stop_attack(self):
+        self.attacking = False
+        self.attack_target = None
+
+        # Resume moving towards the base after defeating the target
+        target_x, target_y = self.target_base
+        distance_to_base = pygame.math.Vector2(target_x - self.rect.x, target_y - self.rect.y)
+        distance_to_base.normalize_ip()
+        self.rect.x += distance_to_base.x * self.speed
+        self.rect.y += distance_to_base.y * self.speed
+
+        # Check for nearby enemy units again
+        for other_unit in self.target_units:
+            if other_unit != self and pygame.sprite.collide_rect(self, other_unit):
+                # Start attacking the other unit
+                self.start_attack(other_unit)
+
+# Group for Player Units
+player_units_group = pygame.sprite.Group()
+
+# Group for Enemy Units
+enemy_units_group = pygame.sprite.Group()
+
+# Game Loop
 running = True
 while running:
+    # Event handling
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            # Place a tower at the mouse position when the mouse button is clicked
-            mouse_x, mouse_y = pygame.mouse.get_pos()
-            if resources >= 50:
-                new_tower = Tower(mouse_x, mouse_y)
-                all_towers.add(new_tower)
-                resources -= new_tower.cost
 
-    # Update
-    all_enemies.update()
-    all_bullets.update()
+        # Send a player unit when the 'P' key is pressed
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+            player_unit = Unit(GREEN, 50, HEIGHT // 2, (WIDTH - 100, HEIGHT // 2), enemy_units_group)
+            player_units_group.add(player_unit)
 
-    # Check for collisions between bullets and enemies
-    collisions = pygame.sprite.groupcollide(all_bullets, all_enemies, True, True)
+        # Send an enemy unit when the 'E' key is pressed
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
+            enemy_unit = Unit(RED, WIDTH - 50, HEIGHT // 2, (50, HEIGHT // 2), player_units_group)
+            enemy_units_group.add(enemy_unit)
 
-    # Check for collisions between enemies and the player's base
-    base_collisions = pygame.sprite.spritecollide(player_base, all_enemies, True)
-    for enemy in base_collisions:
-        player_base.health -= 10
+    # Game Logic
 
-    # Check for game over condition
-    if player_base.health <= 0:
-        print("Game Over!")
-        running = False
+    # Update Player Units
+    player_units_group.update()
 
-    # Draw
+    # Update Enemy Units
+    enemy_units_group.update()
+
+    # Drawing
     screen.fill(WHITE)
-    all_towers.draw(screen)
-    all_enemies.draw(screen)
-    all_bullets.draw(screen)
-    screen.blit(player_base.image, player_base.rect)
 
-    # Display base health
-    base_health_text = base_health_font.render(f"Base Health: {player_base.health}", True, (0, 0, 0))
-    screen.blit(base_health_text, (10, 10))
+    # Draw Player Base
+    pygame.draw.rect(screen, BLUE, (25, HEIGHT // 2 - 25, 50, 50))
 
-    # Display resources
-    resource_text = base_health_font.render(f"Resources: {resources}", True, (0, 0, 0))
-    screen.blit(resource_text, (10, 50))
+    # Draw Enemy Base
+    pygame.draw.rect(screen, RED, (WIDTH - 75, HEIGHT // 2 - 25, 50, 50))
 
-    # Flip the display
+    # Draw Player Units
+    player_units_group.draw(screen)
+
+    # Draw Enemy Units
+    enemy_units_group.draw(screen)
+
+    # Update Display
     pygame.display.flip()
 
     # Cap the frame rate
     clock.tick(FPS)
 
+# Quit Pygame
 pygame.quit()
 sys.exit()
+
