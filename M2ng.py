@@ -1,14 +1,14 @@
 import pygame
 import sys
 
-# Initialize Pygame
+# Initsialiseeri pygame
 pygame.init()
 
-# Game Constants
+# Mängu konstandid
 WIDTH, HEIGHT = 800, 600
 FPS = 60
 
-# Colors
+# Värvid
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
@@ -19,7 +19,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Base Battle")
 clock = pygame.time.Clock()
 
-# Class for Units
+# Klass üksuste jaoks
 class Unit(pygame.sprite.Sprite):
     def __init__(self, color, x, y, target_base, target_units, enemy_base_health):
         super().__init__()
@@ -35,34 +35,33 @@ class Unit(pygame.sprite.Sprite):
 
     def update(self):
         if self.health <= 0:
-            # Unit is defeated, remove from the group
+            # Kui üksus hävitatakse, eemalda gruppist
             self.kill()
 
         target_x, target_y = self.target_base
         distance_to_base = pygame.math.Vector2(target_x - self.rect.x, target_y - self.rect.y)
 
-        # Move towards the base
+        # Liigu baasi poole
         distance_to_base_length = distance_to_base.length()
         if distance_to_base_length > 0:
             distance_to_base.normalize_ip()
             self.rect.x += distance_to_base.x * self.speed
             self.rect.y += distance_to_base.y * self.speed
 
-        # Check for nearby enemy units
+        # Kontrolli läheduses olevaid vastase üksuseid
         for other_unit in self.target_units:
             if other_unit != self and pygame.sprite.collide_rect(self, other_unit):
-                # Start attacking the other unit
+                # Ründa teist üksust
                 other_unit.health -= 2
 
-        # Check if the unit is close to the enemy base
-        if distance_to_base_length < 50:
-            # Deal damage to the enemy base
-            self.enemy_base_health -= 4  # Adjust damage as needed
+        # Kontrolli kas üksus on baasi lähedal, kui on hakka baasi hävitama
+        if distance_to_base_length < 50:                                                    
+            self.enemy_base_health -= 4  
 
-        # Check if the enemy base has been destroyed
+        # Kontrolli kas baas on hävitatud
         if self.enemy_base_health <= 0:
             print("Enemy base destroyed!")
-# Class for Turrets
+# piiramistorni(turret) klass
 class Turret(pygame.sprite.Sprite):
     def __init__(self, color, x, y, target_units):
         super().__init__()
@@ -78,33 +77,33 @@ class Turret(pygame.sprite.Sprite):
         if self.attack_cooldown > 0:
             self.attack_cooldown -= 1
 
-        # Check for nearby enemy units
+        # Kontrolli kas läheduses on üksuseid
         for other_unit in self.target_units:
             if pygame.sprite.collide_rect(self, other_unit) and self.attack_cooldown == 0:
-                # Deal damage to the target unit
+                # Võtab vastase üksuselt elusi vähemaks
                 other_unit.health -= 2
-                self.attack_cooldown = FPS  # Set cooldown to limit the firing rate
+                self.attack_cooldown = FPS  # Paneb ooteaja turreti laskmiskiirusele
 
-# Group for Player Units
+# Mängija(sinu) üksuste grupp
 player_units_group = pygame.sprite.Group()
 
-# Group for Enemy Units
+# Vastase üksuste grupp
 enemy_units_group = pygame.sprite.Group()
 
-# Group for Player Turrets
+# Mängija turreti grupp
 player_turrets_group = pygame.sprite.Group()
 
-# Group for Enemy Turrets
+# Vastase turreti grupp
 enemy_turrets_group = pygame.sprite.Group()
 
-# Maximum number of turrets each player can place
+# Maksimaalne turretite arv
 MAX_TURRETS = 3
 
-# Health of the bases
+# Baaside elud
 blue_base_health = 100
 red_base_health = 100
 
-# Game Loop
+# Põhi tsükkel
 running = True
 while running:
     # Event handling
@@ -112,23 +111,23 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-        # Send a player unit when the 'P' key is pressed
+        # Klahv 'P' vajutamisel saada yksus v2lja(mängija)
         if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
             player_unit = Unit(GREEN, 50, HEIGHT // 2, (WIDTH - 100, HEIGHT // 2), enemy_units_group, red_base_health)
             player_units_group.add(player_unit)
 
-        # Send an enemy unit when the 'E' key is pressed
+        # Klahv 'E' vajutamisel saada yksus v2lja(vastane)
         if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
             enemy_unit = Unit(RED, WIDTH - 50, HEIGHT // 2, (50, HEIGHT // 2), player_units_group, blue_base_health)
             enemy_units_group.add(enemy_unit)
 
-        # Place a player turret when the 'T' key is pressed
+        # Pane turret maha klahv 'D' vajutamisel(mängija)
         if event.type == pygame.KEYDOWN and event.key == pygame.K_t:
             if len(player_turrets_group) < MAX_TURRETS:
                 player_turret = Turret(GREEN, 75, HEIGHT // 2, enemy_units_group)
                 player_turrets_group.add(player_turret)
 
-        # Place an enemy turret when the 'Y' key is pressed
+        # Pane turret maha klahv 'Y' vajutamisel(vastane)
         if event.type == pygame.KEYDOWN and event.key == pygame.K_y:
             if len(enemy_turrets_group) < MAX_TURRETS:
                 enemy_turret = Turret(RED, WIDTH - 75, HEIGHT // 2, player_units_group)
