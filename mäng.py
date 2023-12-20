@@ -1,5 +1,6 @@
 import pygame
 import sys
+import time
 
 # Initsialiseeri pygame
 pygame.init()
@@ -33,6 +34,7 @@ class Unit(pygame.sprite.Sprite):
         self.target_units = target_units
         self.health = 10
         self.shared_base_health = shared_base_health
+        self.attack_cooldown = 0
 
     def update(self):
         if self.health <= 0:
@@ -49,16 +51,25 @@ class Unit(pygame.sprite.Sprite):
             self.rect.x += distance_to_base.x * self.speed
             self.rect.y += distance_to_base.y * self.speed
 
-        # KOntrolli kas läheduses on üksusi
-        for other_unit in self.target_units:
-            if other_unit != self and pygame.sprite.collide_rect(self, other_unit):
-                # Ründa üksust
-                other_unit.health -= 2
+        if self.attack_cooldown > 0:
+            self.attack_cooldown -= 1
+        else:
+            # Kontrolli vastase olemust
+            for other_unit in self.target_units:
+                if other_unit != self and pygame.sprite.collide_rect(self, other_unit):
+                    # Ründa vaenlast
+                    other_unit.health -= 2
+                    self.attack_cooldown = 15
+                    self.speed = 0
+        if self.attack_cooldown > 0:
+            self.speed = 0
+        else:
+            self.speed = 2
+
 
         # Kontrolli kas üksused on punase baasi läheduses, kui on võta elusi vähemaks
         if distance_to_base_length < 50:
             self.shared_base_health[0] -= 4
-            pygame.time.wait(100)
             print(f"Red base health: {self.shared_base_health[0]}")# Näita baasi elusid
 
         # Kontrolli kas baas on hävitatud
@@ -78,8 +89,9 @@ class Tank(pygame.sprite.Sprite):
         self.speed = 1.5
         self.target_base = target_base
         self.target_units = target_units
-        self.health = 100
+        self.health = 50
         self.shared_base_health = shared_base_health
+        self.attack_cooldown = 0
 
     def update(self):
         if self.health <= 0:
@@ -97,15 +109,25 @@ class Tank(pygame.sprite.Sprite):
             self.rect.y += distance_to_base.y * self.speed
 
         # Kontrolli kas läheduses on üksusi
-        for other_unit in self.target_units:
-            if other_unit != self and pygame.sprite.collide_rect(self, other_unit):
-                # Ründa üksust
-                other_unit.health -= 1
+        if self.attack_cooldown > 0:
+            self.attack_cooldown -= 1
+        else:
+            # Kontrolli vastase olemust
+            for other_unit in self.target_units:
+                if other_unit != self and pygame.sprite.collide_rect(self, other_unit):
+                    # Ründa vaenlast
+                    other_unit.health -= 2
+                    self.attack_cooldown = 15
+                    self.speed = 0
+        if self.attack_cooldown > 0:
+            self.speed = 0
+        else:
+            self.speed = 1.5
+
 
         # Kontrolli kas üksused on punase baasi läheduses, kui on võta elusi vähemaks
         if distance_to_base_length < 50:
             self.shared_base_health[0] -= 2
-            pygame.time.wait(100)
             print(f"Red base health: {self.shared_base_health[0]}")# Näita baasi elusid
 
         # Kontrolli kas baas on hävitatud
@@ -129,6 +151,7 @@ class Unit1(pygame.sprite.Sprite):
         self.target_units = target_units
         self.health = 10
         self.shared_base_health = shared_base_health
+        self.attack_cooldown = 0
 
     def update(self):
         if self.health <= 0:
@@ -143,14 +166,25 @@ class Unit1(pygame.sprite.Sprite):
             self.rect.x += distance_to_base.x * self.speed
             self.rect.y += distance_to_base.y * self.speed
 
-        for other_unit in self.target_units:
-            if other_unit != self and pygame.sprite.collide_rect(self, other_unit):
-                # Ründa teist üksust
-                other_unit.health -= 2
+        if self.attack_cooldown > 0:
+            self.attack_cooldown -= 1
+        else:
+            # Kontrolli vastase olemust
+            for other_unit in self.target_units:
+                if other_unit != self and pygame.sprite.collide_rect(self, other_unit):
+                    # Ründa vaenlast
+                    other_unit.health -= 2
+                    self.attack_cooldown = 15
+                    self.speed = 0
+
+        if self.attack_cooldown > 0:
+            self.speed = 0
+        else:
+            self.speed = 2
+
 
         if distance_to_base_length < 50:            
             self.shared_base_health[0] -= 4
-            pygame.time.wait(500)
             print(f"Green base health: {self.shared_base_health[0]}")
 
         if self.shared_base_health[0] <= 0:
@@ -159,7 +193,8 @@ class Unit1(pygame.sprite.Sprite):
             screen.blit(text, (WIDTH // 3 - text.get_width() // 3, HEIGHT // 2 - text.get_height() // 2))
             pygame.display.flip()
             pygame.time.wait(2000)  
-            return "red"  
+            return "red"
+
 class Tank1(pygame.sprite.Sprite):
     def __init__(self, color, x, y, target_base, target_units, shared_base_health):
         super().__init__()
@@ -169,8 +204,9 @@ class Tank1(pygame.sprite.Sprite):
         self.speed = 1.5
         self.target_base = target_base
         self.target_units = target_units
-        self.health = 100
+        self.health = 50
         self.shared_base_health = shared_base_health
+        self.attack_cooldown = 0
 
     def update(self):
         if self.health <= 0:
@@ -185,14 +221,23 @@ class Tank1(pygame.sprite.Sprite):
             self.rect.x += distance_to_base.x * self.speed
             self.rect.y += distance_to_base.y * self.speed
 
-        for other_unit in self.target_units:
-            if other_unit != self and pygame.sprite.collide_rect(self, other_unit):
-                # Ründa teist üksust
-                other_unit.health -= 1
-
+        if self.attack_cooldown > 0:
+            self.attack_cooldown -= 1
+        else:
+            # Kontrolli vastase olemust
+            for other_unit in self.target_units:
+                if other_unit != self and pygame.sprite.collide_rect(self, other_unit):
+                    # Ründa vaenlast
+                    other_unit.health -= 2
+                    self.attack_cooldown = 15
+                    self.speed = 0
+        if self.attack_cooldown > 0:
+            self.speed = 0
+        else:
+            self.speed = 1.5
+            
         if distance_to_base_length < 50:            
             self.shared_base_health[0] -= 2
-            pygame.time.wait(500)
             print(f"Green base health: {self.shared_base_health[0]}")
 
         if self.shared_base_health[0] <= 0:
@@ -201,7 +246,8 @@ class Tank1(pygame.sprite.Sprite):
             screen.blit(text, (WIDTH // 3 - text.get_width() // 3, HEIGHT // 2 - text.get_height() // 2))
             pygame.display.flip()
             pygame.time.wait(2000)  
-            return "red"  
+            return "red"
+        
 # Turreti class
 class Turret(pygame.sprite.Sprite):
     def __init__(self, color, x, y, target_units):
@@ -297,7 +343,7 @@ class Raha:
     def passive_income(self):
         self.roheline_raha += 50
         self.punane_raha += 50
-        pygame.time.wait(15000)
+        pygame.time.wait(1)
     
     # Yksuse mahapanekul
     def roheline_unit_place(self):
