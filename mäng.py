@@ -134,6 +134,27 @@ class Turret(pygame.sprite.Sprite):
                 other_unit.health -= 5
                 self.attack_cooldown = FPS  # Ooteaeg turreti laskmiste vahel
 
+class Turret1(pygame.sprite.Sprite):
+    def __init__(self, color, x, y, target_units):
+        super().__init__()
+        self.image = pygame.image.load("turret1.png")
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        self.target_units = target_units
+        self.attack_range = 100
+        self.attack_cooldown = 0
+
+    def update(self):
+        if self.attack_cooldown > 0:
+            self.attack_cooldown -= 1
+
+        # Vaata kas läheduses on vaenlase üksusi
+        for other_unit in self.target_units:
+            if pygame.sprite.collide_rect(self, other_unit) and self.attack_cooldown == 0:
+                # Vähenda vaenlase üksuse elusi
+                other_unit.health -= 5
+                self.attack_cooldown = FPS  # Ooteaeg turreti laskmiste vahel
+
 # Rohelise üksuste grupp
 player_units_group = pygame.sprite.Group()
 
@@ -197,13 +218,13 @@ while running:
             # Klahv 'T' vajutamisel pane roheline turret maha
             if keys[pygame.K_t]:
                 if len(player_turrets_group) < MAX_TURRETS:
-                    player_turret = Turret(GREEN, 75, HEIGHT // 2, enemy_units_group)
+                    player_turret = Turret(GREEN, 120, HEIGHT // 2, enemy_units_group)
                     player_turrets_group.add(player_turret)
 
             # Klahv 'Y' vajutamisel pane punane turret maha
             if keys[pygame.K_y]:
                 if len(enemy_turrets_group) < MAX_TURRETS:
-                    enemy_turret = Turret(RED, WIDTH - 75, HEIGHT // 2, player_units_group)
+                    enemy_turret = Turret1(RED, WIDTH - 125, HEIGHT // 2, player_units_group)
                     enemy_turrets_group.add(enemy_turret)
 
     if not game_over:
