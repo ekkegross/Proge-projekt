@@ -21,7 +21,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("mäng")
 clock = pygame.time.Clock()
 
-# Üksuste klass
+# Roheliste yksuste klass
 class Unit(pygame.sprite.Sprite):
     def __init__(self, color, x, y, target_base, target_units, shared_base_health):
         super().__init__()
@@ -38,7 +38,7 @@ class Unit(pygame.sprite.Sprite):
         if self.health <= 0:
             # Kui üksus on hävitatud eemalda grupp
             self.kill()
-
+            raha.punane_unit_kill()
         target_x, target_y = self.target_base
         distance_to_base = pygame.math.Vector2(target_x - self.rect.x, target_y - self.rect.y)
 
@@ -85,6 +85,7 @@ class Tank(pygame.sprite.Sprite):
         if self.health <= 0:
             # Kui üksus on hävitatud eemalda grupp
             self.kill()
+            raha.punane_tank_kill
 
         target_x, target_y = self.target_base
         distance_to_base = pygame.math.Vector2(target_x - self.rect.x, target_y - self.rect.y)
@@ -133,6 +134,7 @@ class Unit1(pygame.sprite.Sprite):
     def update(self):
         if self.health <= 0:
             self.kill()
+            raha.roheline_unit_kill()
 
         target_x, target_y = self.target_base
         distance_to_base = pygame.math.Vector2(target_x - self.rect.x, target_y - self.rect.y)
@@ -175,6 +177,7 @@ class Tank1(pygame.sprite.Sprite):
     def update(self):
         if self.health <= 0:
             self.kill()
+            raha.roheline_tank_kill()
 
         target_x, target_y = self.target_base
         distance_to_base = pygame.math.Vector2(target_x - self.rect.x, target_y - self.rect.y)
@@ -202,6 +205,7 @@ class Tank1(pygame.sprite.Sprite):
             pygame.display.flip()
             pygame.time.wait(2000)  
             return "red"  
+
 # Turreti class
 class Turret(pygame.sprite.Sprite):
     def __init__(self, color, x, y, target_units):
@@ -212,6 +216,9 @@ class Turret(pygame.sprite.Sprite):
         self.target_units = target_units
         self.attack_range = 750
         self.attack_cooldown = 0
+
+    def tapa(self):
+        self.kill()
 
     def update(self):
         if self.attack_cooldown > 0:
@@ -234,6 +241,9 @@ class Turret1(pygame.sprite.Sprite):
         self.attack_range = 750
         self.attack_cooldown = 0
 
+    def tapa(self):
+        self.kill()
+
     def update(self):
         if self.attack_cooldown > 0:
             self.attack_cooldown -= 1
@@ -254,6 +264,9 @@ class Turret2(pygame.sprite.Sprite):
         self.target_units = target_units
         self.attack_range = 1000
         self.attack_cooldown = 0
+
+    def tapa(self):
+        self.kill()
 
     def update(self):
         if self.attack_cooldown > 0:
@@ -276,6 +289,9 @@ class Turret3(pygame.sprite.Sprite):
         self.attack_range = 1000
         self.attack_cooldown = 0
 
+    def tapa(self):
+        self.kill()
+
     def update(self):
         if self.attack_cooldown > 0:
             self.attack_cooldown -= 1
@@ -287,7 +303,7 @@ class Turret3(pygame.sprite.Sprite):
                 other_unit.health -= 10
                 self.attack_cooldown = 10  # Ooteaeg turreti laskmiste vahel
 
-# Raha
+
 
 class Raha:
     def __init__(self, roheline_raha, punane_raha):
@@ -297,7 +313,6 @@ class Raha:
     def passive_income(self):
         self.roheline_raha += 50
         self.punane_raha += 50
-        pygame.time.wait(15000)
     
     # Yksuse mahapanekul
     def roheline_unit_place(self):
@@ -365,7 +380,7 @@ player_turrets_group = pygame.sprite.Group()
 enemy_turrets_group = pygame.sprite.Group()
 
 # Maksimaalne turretite arv
-MAX_TURRETS = 3
+MAX_TURRETS = 1
 
 # Alustus raha
 raha = Raha(250, 250)
@@ -381,6 +396,9 @@ punanehud = pygame.image.load('hud1.png')
 # Mängu seis
 game_over = False
 
+# Raha juurde iga 10s järel
+passiivne_sissetulek = pygame.USEREVENT + 0
+pygame.time.set_timer(passiivne_sissetulek, 10000)
 
 # Põhitsükkel
 running = True
@@ -390,6 +408,9 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
+        if event.type == passiivne_sissetulek:
+            raha.passive_income()
+        
         keys = pygame.key.get_pressed()
 
         # Alusta uuesti tühiku vajutamisega
@@ -412,48 +433,86 @@ while running:
             
             # Klahv 'Q' vajutamisel saada roheline üksus välja
             if keys[pygame.K_q]:
-                player_unit = Unit(GREEN, 50, HEIGHT // 2, (WIDTH - 100, HEIGHT // 2), enemy_units_group, shared_red_base_health)
-                player_units_group.add(player_unit)
+                if raha.roheline_raha >= 100:
+                    player_unit = Unit(GREEN, 50, HEIGHT // 2, (WIDTH - 100, HEIGHT // 2), enemy_units_group, shared_red_base_health)
+                    player_units_group.add(player_unit)
+                    raha.roheline_unit_place()
             
-            # Klahv 'W' vajutamisel saada roheline üksus välja
+            # Klahv 'W' vajutamisel saada tugevam roheline üksus välja
             if keys[pygame.K_w]:
-                player_unit = Tank(GREEN, 50, HEIGHT // 2, (WIDTH - 100, HEIGHT // 2), enemy_units_group, shared_red_base_health)
-                player_units_group.add(player_unit)
+                if raha.roheline_raha >= 250:
+                    player_unit = Tank(GREEN, 50, HEIGHT // 2, (WIDTH - 100, HEIGHT // 2), enemy_units_group, shared_red_base_health)
+                    player_units_group.add(player_unit)
+                    raha.roheline_tank_place()
                 
             # Klahv 'E' vajutamisel pane roheline turret maha
             if keys[pygame.K_e]:
                 if len(player_turrets_group) < MAX_TURRETS:
-                    player_turret = Turret(GREEN, 120, HEIGHT // 2, enemy_units_group)
-                    player_turrets_group.add(player_turret)
+                    if raha.roheline_raha >= 100:
+                        player_turret = Turret(GREEN, 120, HEIGHT // 2, enemy_units_group)
+                        player_turrets_group.add(player_turret)
+                        raha.roheline_turret_place()
+
             # Klahv R' vajutamisel pane tugevam roheline turret maha
             if keys[pygame.K_r]:
                 if len(player_turrets_group) < MAX_TURRETS:
-                    player_turret = Turret2(GREEN, 120, HEIGHT // 2, enemy_units_group)
-                    player_turrets_group.add(player_turret)  
+                    if raha.roheline_raha >= 250:
+                        player_turret = Turret2(GREEN, 120, HEIGHT // 2, enemy_units_group)
+                        player_turrets_group.add(player_turret)
+                        raha.roheline_superturret_place()
+
+            # Klahv T' vajutamisel myy roheline turret maha
+            if keys[pygame.K_t]:
+                if len(player_turrets_group) == MAX_TURRETS:
+                    if isinstance(player_turret, Turret2):
+                        player_turret.tapa()
+                        raha.roheline_superturret_sell()
+                    if isinstance(player_turret, Turret):
+                        player_turret.tapa()
+                        raha.roheline_turret_sell()
             
             # Punase baasi tegelased
             
             # Klahv 'Y' vajutamisel saada punane üksus välja
             if keys[pygame.K_y]:
-                enemy_unit = Unit1(RED, WIDTH - 50, HEIGHT // 2, (50, HEIGHT // 2), player_units_group, shared_green_base_health)
-                enemy_units_group.add(enemy_unit)
+                if raha.punane_raha >= 100:
+                    enemy_unit = Unit1(RED, WIDTH - 50, HEIGHT // 2, (50, HEIGHT // 2), player_units_group, shared_green_base_health)
+                    enemy_units_group.add(enemy_unit)
+                    raha.punane_unit_place()
                 
             # Klahv 'U' vajutamisel saada punane üksus välja
             if keys[pygame.K_u]:
-                enemy_unit = Tank1(RED, WIDTH - 50, HEIGHT // 2, (50, HEIGHT // 2), player_units_group, shared_green_base_health)
-                enemy_units_group.add(enemy_unit)
+                if raha.punane_raha >= 250:
+                    enemy_unit = Tank1(RED, WIDTH - 50, HEIGHT // 2, (50, HEIGHT // 2), player_units_group, shared_green_base_health)
+                    enemy_units_group.add(enemy_unit)
+                    raha.punane_tank_place()
 
             # Klahv 'I' vajutamisel pane punane turret maha
             if keys[pygame.K_i]:
                 if len(enemy_turrets_group) < MAX_TURRETS:
-                    enemy_turret = Turret1(RED, WIDTH - 125, HEIGHT // 2, player_units_group)
-                    enemy_turrets_group.add(enemy_turret)
+                    if raha.punane_raha >= 100:
+                        enemy_turret = Turret1(RED, WIDTH - 125, HEIGHT // 2, player_units_group)
+                        enemy_turrets_group.add(enemy_turret)
+                        raha.punane_turret_place()
                     
             # Klahv 'O' vajutamisel pane tugevam punane turret maha
             if keys[pygame.K_o]:
                 if len(enemy_turrets_group) < MAX_TURRETS:
-                    enemy_turret = Turret3(RED, WIDTH - 125, HEIGHT // 2, player_units_group)
-                    enemy_turrets_group.add(enemy_turret)
+                    if raha.punane_raha >= 250:
+                        enemy_turret = Turret3(RED, WIDTH - 125, HEIGHT // 2, player_units_group)
+                        enemy_turrets_group.add(enemy_turret)
+                        raha.punane_superturret_place()
+            
+            # Klahv 'P' vajutamisel myy punane turret maha
+            if keys[pygame.K_p]:
+                if len(enemy_turrets_group) == MAX_TURRETS:
+                    if isinstance(enemy_turret, Turret3):
+                        enemy_turret.tapa()
+                        raha.punane_superturret_sell()
+                    if isinstance(enemy_turret, Turret1):
+                        enemy_turret.tapa()
+                        raha.punane_turret_sell()
+
 
     if not game_over:
         # Uuenda rohelisi üksuseid
@@ -467,9 +526,6 @@ while running:
 
         # Uuenda punaseid turreteid
         enemy_turrets_group.update()
-
-        # Passiivne sissetulek
-        raha.passive_income()
 
         # Kontrolli kas mäng on läbi
         winner = None
