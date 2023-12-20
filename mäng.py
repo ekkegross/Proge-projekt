@@ -13,6 +13,8 @@ WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 GREEN = (0, 255, 0)
+YELLOW = (255, 255, 0)
+BLACK = (0, 0, 0)
 
 # Setup
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -94,7 +96,7 @@ class Tank(pygame.sprite.Sprite):
             self.rect.x += distance_to_base.x * self.speed
             self.rect.y += distance_to_base.y * self.speed
 
-        # KOntrolli kas läheduses on üksusi
+        # Kontrolli kas läheduses on üksusi
         for other_unit in self.target_units:
             if other_unit != self and pygame.sprite.collide_rect(self, other_unit):
                 # Ründa üksust
@@ -284,7 +286,72 @@ class Turret3(pygame.sprite.Sprite):
                 # Vähenda vaenlase üksuse elusi
                 other_unit.health -= 10
                 self.attack_cooldown = 10  # Ooteaeg turreti laskmiste vahel
-                
+
+# Raha
+
+class Raha:
+    def __init__(self, roheline_raha, punane_raha):
+        self.roheline_raha = roheline_raha
+        self.punane_raha = punane_raha
+    
+    def passive_income(self):
+        self.roheline_raha += 50
+        self.punane_raha += 50
+        pygame.time.wait(15000)
+    
+    # Yksuse mahapanekul
+    def roheline_unit_place(self):
+        self.roheline_raha -= 50
+
+    def punane_unit_place(self):
+        self.punane_raha -= 50
+
+    def roheline_tank_place(self):
+        self.roheline_raha -= 250
+
+    def punane_tank_place(self):
+        self.punane_raha -= 250
+    
+    # Yksuse hävitamisel
+    def roheline_unit_kill(self):
+        self.roheline_raha += 50
+
+    def punane_unit_kill(self):
+        self.punane_raha += 50
+
+    def roheline_tank_kill(self):
+        self.roheline_raha += 250
+
+    def punane_tank_kill(self):
+        self.punane_raha += 250
+    
+    # Turreti mahapanemine
+    def roheline_turret_place(self):
+        self.roheline_raha -= 100
+
+    def punane_turret_place(self):
+        self.punane_raha -= 100
+    
+    def roheline_superturret_place(self):
+        self.roheline_raha -= 250
+
+    def punane_superturret_place(self):
+        self.punane_raha -= 250
+
+    # Turreti mahamyymisel
+    def roheline_turret_sell(self):
+        self.roheline_raha += 100
+
+    def punane_turret_sell(self):
+        self.punane_raha += 100
+    
+    def roheline_superturret_sell(self):
+        self.roheline_raha += 250
+
+    def punane_superturret_sell(self):
+        self.punane_raha += 250
+
+
 # Rohelise üksuste grupp
 player_units_group = pygame.sprite.Group()
 
@@ -300,6 +367,9 @@ enemy_turrets_group = pygame.sprite.Group()
 # Maksimaalne turretite arv
 MAX_TURRETS = 3
 
+# Alustus raha
+raha = Raha(250, 250)
+
 # Baaside elud ja pildid
 shared_red_base_health = [100]
 shared_green_base_health = [100]
@@ -307,8 +377,10 @@ rohelinebaas = pygame.image.load('baas.png')
 punanebaas = pygame.image.load('baas1.png')
 rohelinehud = pygame.image.load('hud.png')
 punanehud = pygame.image.load('hud1.png')
+
 # Mängu seis
 game_over = False
+
 
 # Põhitsükkel
 running = True
@@ -396,6 +468,9 @@ while running:
         # Uuenda punaseid turreteid
         enemy_turrets_group.update()
 
+        # Passiivne sissetulek
+        raha.passive_income()
+
         # Kontrolli kas mäng on läbi
         winner = None
         if shared_red_base_health[0] <= 0:
@@ -415,6 +490,8 @@ while running:
             enemy_units_group.empty()
             player_turrets_group.empty()
             enemy_turrets_group.empty()
+
+
     # Taust 
     taust = pygame.image.load("Taust.png")
     screen.blit(taust, (0, 0))
@@ -422,7 +499,17 @@ while running:
     # HUD
     screen.blit(rohelinehud, (0, HEIGHT // 2 - 500))
     screen.blit(punanehud, (WIDTH - 250, HEIGHT // 2 - 500))
-    
+
+    # Rohelise raha
+    font = pygame.font.Font(None, 36)
+    text = font.render(f"Raha: {raha.roheline_raha}$", True, BLACK)
+    screen.blit(text, (10, HEIGHT // 2 - 400))
+
+    # Punase raha
+    font = pygame.font.Font(None, 36)
+    text = font.render(f"Raha: {raha.punane_raha}$", True, BLACK)
+    screen.blit(text, (WIDTH - 275, HEIGHT // 2 - 400))
+
     # Rohelise baasi ruut
     screen.blit(rohelinebaas, (20, HEIGHT // 2 - 40))
     # Rohelise baasi elud
