@@ -23,8 +23,7 @@ clock = pygame.time.Clock()
 class Unit(pygame.sprite.Sprite):
     def __init__(self, color, x, y, target_base, target_units, shared_base_health):
         super().__init__()
-        self.image = pygame.Surface((20, 20))
-        self.image.fill(color)
+        self.image = pygame.image.load("mehike.png")
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
         self.speed = 2
@@ -73,8 +72,7 @@ class Unit(pygame.sprite.Sprite):
 class Unit1(pygame.sprite.Sprite):
     def __init__(self, color, x, y, target_base, target_units, shared_base_health):
         super().__init__()
-        self.image = pygame.Surface((20, 20))
-        self.image.fill(color)
+        self.image = pygame.image.load("mehike1.png")
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
         self.speed = 2
@@ -108,7 +106,7 @@ class Unit1(pygame.sprite.Sprite):
 
         if self.shared_base_health[0] <= 0:
             font = pygame.font.Font(None, 74)
-            text = font.render("Red teamteam won! Press SPACE to restart, ESC to exit.", True, BLUE)
+            text = font.render("Red team won! Press SPACE to restart, ESC to exit.", True, BLUE)
             screen.blit(text, (WIDTH // 3 - text.get_width() // 3, HEIGHT // 2 - text.get_height() // 2))
             pygame.display.flip()
             pygame.time.wait(2000)  
@@ -118,8 +116,7 @@ class Unit1(pygame.sprite.Sprite):
 class Turret(pygame.sprite.Sprite):
     def __init__(self, color, x, y, target_units):
         super().__init__()
-        self.image = pygame.Surface((20, 20))
-        self.image.fill(color)
+        self.image = pygame.image.load("turret.png")
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
         self.target_units = target_units
@@ -134,7 +131,7 @@ class Turret(pygame.sprite.Sprite):
         for other_unit in self.target_units:
             if pygame.sprite.collide_rect(self, other_unit) and self.attack_cooldown == 0:
                 # Vähenda vaenlase üksuse elusi
-                other_unit.health -= 2
+                other_unit.health -= 5
                 self.attack_cooldown = FPS  # Ooteaeg turreti laskmiste vahel
 
 # Rohelise üksuste grupp
@@ -152,9 +149,11 @@ enemy_turrets_group = pygame.sprite.Group()
 # Maksimaalne turretite arv
 MAX_TURRETS = 3
 
-# Baaside elud
+# Baaside elud ja pildid
 shared_red_base_health = [100]
 shared_green_base_health = [100]
+rohelinebaas = pygame.image.load('baas.png')
+punanebaas = pygame.image.load('baas1.png')
 
 # Mängu seis
 game_over = False
@@ -240,17 +239,18 @@ while running:
             player_turrets_group.empty()
             enemy_turrets_group.empty()
     # Taust
-    screen.fill(WHITE)
+    taust = pygame.image.load("Taust.png")
+    screen.blit(taust, (0, 0))
 
     # Rohelise baasi ruut
-    pygame.draw.rect(screen, GREEN, (25, HEIGHT // 2 - 25, 50, 50))
+    screen.blit(rohelinebaas, (20, HEIGHT // 2 - 40))
     # Rohelise baasi elud
     font = pygame.font.Font(None, 36)
     text = font.render(f"Green Base Health: {shared_green_base_health[0]}", True, GREEN)
     screen.blit(text, (25, HEIGHT // 2 - 50))
 
     # Punase baasi ruut
-    pygame.draw.rect(screen, RED, (WIDTH - 75, HEIGHT // 2 - 25, 50, 50))
+    screen.blit(punanebaas, (WIDTH - 125, HEIGHT // 2 - 40))
     # Punase baasi elud
     text = font.render(f"Red Base Health: {shared_red_base_health[0]}", True, RED)
     screen.blit(text, (WIDTH - 275, HEIGHT // 2 - 50))
