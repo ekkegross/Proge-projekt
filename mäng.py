@@ -604,32 +604,32 @@ while running:
 
     # Rohelise raha
     font = pygame.font.Font(None, 36)
-    text = font.render(f"Raha: {raha.roheline_raha}$", True, BLACK)
+    text = font.render(f"Raha: {raha.roheline_raha}$", True, GREEN)
     screen.blit(text, (10, HEIGHT // 2 - 400))
 
     # Punase raha
     font = pygame.font.Font(None, 36)
-    text = font.render(f"Raha: {raha.punane_raha}$", True, BLACK)
-    screen.blit(text, (WIDTH - 275, HEIGHT // 2 - 400))
+    text = font.render(f"Raha: {raha.punane_raha}$", True, RED)
+    screen.blit(text, (WIDTH - 175, HEIGHT // 2 - 400))
 
     # Rohelise baasi ruut
     screen.blit(rohelinebaas, (20, HEIGHT // 2 - 40))
     # Rohelise baasi elud
     font = pygame.font.Font(None, 36)
     text = font.render(f"Green Base Health: {shared_green_base_health[0]}", True, GREEN)
-    screen.blit(text, (25, HEIGHT // 2 - 50))
+    screen.blit(text, (0, HEIGHT // 2 - 115))
 
     # Punase baasi ruut
     screen.blit(punanebaas, (WIDTH - 125, HEIGHT // 2 - 40))
     # Punase baasi elud
     text = font.render(f"Red Base Health: {shared_red_base_health[0]}", True, RED)
-    screen.blit(text, (WIDTH - 275, HEIGHT // 2 - 50))
+    screen.blit(text, (WIDTH - 275, HEIGHT // 2 - 115))
 
     # Tekst juhiste kohta
-    text = font.render("Vajuta 'E'(roheline) või 'P'(punane), et saata välja üksus", True, BLUE)
-    screen.blit(text, (380, HEIGHT // 1 - 100))
-    text = font.render("Vajuta 'T'(roheline) või 'Y'(punane), et panna maha piiramistorn(turret)", True, BLUE)
-    screen.blit(text, (310, HEIGHT // 1 - 70))
+    text = font.render("Vajuta 'Q', 'W'(roheline) või 'Y', 'U'(punane), et saata välja üksus", True, WHITE)
+    screen.blit(text, (360, HEIGHT // 1 - 100))
+    text = font.render("Vajuta 'E', 'R'(roheline) või 'I', 'O'(punane), et panna maha piiramistorn(turret)", True, WHITE)
+    screen.blit(text, (290, HEIGHT // 1 - 70))
     # Rohelised üksused(väiksed kastid)
     player_units_group.draw(screen)
 
