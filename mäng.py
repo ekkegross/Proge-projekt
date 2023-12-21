@@ -634,11 +634,6 @@ while running:
     text = font.render(f"Red Base Health: {shared_red_base_health[0]}", True, RED)
     screen.blit(text, (WIDTH - 275, HEIGHT // 2 - 115))
 
-    # Tekst juhiste kohta
-    text = font.render("Vajuta 'Q', 'W'(roheline) või 'Y', 'U'(punane), et saata välja üksus", True, WHITE)
-    screen.blit(text, (360, HEIGHT // 1 - 100))
-    text = font.render("Vajuta 'E', 'R'(roheline) või 'I', 'O'(punane), et panna maha piiramistorn(turret)", True, WHITE)
-    screen.blit(text, (290, HEIGHT // 1 - 70))
     # Rohelised üksused(väiksed kastid)
     player_units_group.draw(screen)
 
