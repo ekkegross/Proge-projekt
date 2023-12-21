@@ -5,6 +5,7 @@
 # Sinine turret on tugevam kui tavaline turret.
 # Iga kümne sekundi tagant saavad mõlemad mängijad juurde 50 rahaühikut($).
 # Võidab see kes esimesena teise baasi ära hävitab
+# Valge turret rahamärgiga, tähendab turreti mahamüümist
 
 import pygame
 import sys
