@@ -1,5 +1,5 @@
 # Juhised:
-# Mäng on mõeldud kahele mängijale ühe arvuti taga. Roheline mängija on paremal klaviatuuri pool, punane vasakul.
+# Mäng on mõeldud kahele mängijale ühe arvuti taga. Roheline mängija on vasakul klaviatuuri pool, punane paremal.
 # Klahvide poolt väljakutsuvate üksuste hinnad ja tüübid on toodud välja ekraani üleval. Rohelisel mängijal vasakul üleval, punasel paremal üleval.
 # Siniste kätega üksus on nö tank ehk siis tal on rohkem elusid kui tavaüksusel
 # Sinine turret on tugevam kui tavaline turret.
