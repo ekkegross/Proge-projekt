@@ -1,3 +1,11 @@
+# Juhised:
+# Mäng on mõeldud kahele mängijale ühe arvuti taga. Roheline mängija on paremal klaviatuuri pool, punane vasakul.
+# Klahvide poolt väljakutsuvate üksuste hinnad ja tüübid on toodud välja ekraani üleval. Rohelisel mängijal vasakul üleval, punasel paremal üleval.
+# Siniste kätega üksus on nö tank ehk siis tal on rohkem elusid kui tavaüksusel
+# Sinine turret on tugevam kui tavaline turret.
+# Iga kümne sekundi tagant saavad mõlemad mängijad juurde 50 rahaühikut($).
+# Võidab see kes esimesena teise baasi ära hävitab
+
 import pygame
 import sys
 import time
